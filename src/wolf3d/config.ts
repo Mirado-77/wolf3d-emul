@@ -34,7 +34,7 @@ export const ENT = {
 /** is_object_t (object.h) → sprite sheet, frame width, frame count. Index = entity type. */
 export const SHEETS = [
   { file: "Monster", fw: 64, n: 32 },
-  { file: "boss_atlas_64", fw: 128, n: 85 },
+  { file: "boss_atlas_64", fw: 128, n: 86 },
   { file: "key", fw: 64, n: 11 },
   { file: "pot_mana", fw: 64, n: 8 },
   { file: "pot_pv", fw: 64, n: 8 },

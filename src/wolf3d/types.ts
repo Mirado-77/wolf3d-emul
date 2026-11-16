@@ -17,7 +17,24 @@ export type Ent = {
   stateT: number;
   /** NPC already said its line. */
   said?: boolean;
+  /** Only set on bosses (see boss.ts). */
+  boss?: {
+    state: BossState;
+    /** Time in the current state. */
+    stateT: number;
+    /** Time since the last melee attack. */
+    atkT: number;
+    /** Frame inside the current state's animation. */
+    frame: number;
+    frameT: number;
+    /** Has seen the player at least once. */
+    aware: boolean;
+    maxHp: number;
+  };
 };
+
+/** boss_state_t (boss.h) */
+export type BossState = "idle" | "melee" | "enraged" | "meleeEnraged";
 
 /** Entity as read from the config files, before the game starts. */
 export type EntSpawn = Omit<Ent, "t" | "state" | "stateT">;

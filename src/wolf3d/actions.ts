@@ -27,8 +27,12 @@ function hitEnemy(g: Game, e: Ent) {
   e.hp -= 10 + Math.random() * 10;
   if (e.type === ENT.MONSTER && e.state === "disguised") { e.state = "transform"; e.stateT = 0; }
   if (e.hp <= 0) {
-    e.state = "dying"; e.stateT = 0; g.kills++;
-    if (e.type === ENT.BOSS) { g.won = true; say(g, LINES.win, 99); }
+    g.kills++;
+    if (e.type === ENT.BOSS) {
+      // boss.c removes the boss at once and manage_game.c shows the win screen when every boss is dead
+      e.alive = false;
+      if (!g.ents.some((o) => o.alive && o.type === ENT.BOSS)) { g.won = true; say(g, LINES.win, 99); }
+    } else { e.state = "dying"; e.stateT = 0; }
   } else if (e.type === ENT.MONSTER && e.state === "chase") {
     e.state = "hit"; e.stateT = 0;
   }

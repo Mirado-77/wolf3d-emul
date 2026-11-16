@@ -1,4 +1,5 @@
 import { ENT, LINES, PLAYER } from "./config";
+import { newBoss } from "./boss";
 import type { Assets, Ent, Game } from "./types";
 
 /** Fresh game state from the loaded assets (init_game.c). */
@@ -7,6 +8,7 @@ export function newGame(a: Assets): Game {
     map: a.map0.map((r) => [...r]),
     ents: a.ents0.map((e): Ent => ({
       ...e, t: Math.random() * 3, state: e.type === ENT.MONSTER ? "disguised" : "chase", stateT: 0,
+      boss: e.type === ENT.BOSS ? newBoss(e.hp) : undefined,
     })),
     // init_game.c: x = 3, y = 3, dir = (-1, 0) — we face down the first corridor instead
     px: 3.5, py: 3.5, dir: Math.PI / 2,

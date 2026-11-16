@@ -1,4 +1,5 @@
 import { ENT, LINES, MOVE_SPEED, PLAYER } from "./config";
+import { updateBoss } from "./boss";
 import { isOver, lineClear, say, solid } from "./game";
 import type { Ent, Game, Keys } from "./types";
 
@@ -40,15 +41,16 @@ function updatePlayer(g: Game, k: Keys, dt: number) {
 function updateEntity(g: Game, e: Ent, dt: number, playing: boolean) {
   e.t += dt; e.stateT += dt;
   const dx = g.px - e.x, dy = g.py - e.y, d = Math.hypot(dx, dy);
-  if (e.state === "dying" && e.stateT > (e.type === ENT.BOSS ? 2.5 : 1.2)) { e.alive = false; return; }
+  if (e.state === "dying" && e.stateT > 1.2) { e.alive = false; return; }
   if (tryPickup(g, e, d)) return;
   if ((e.type === ENT.MASTER || e.type === ENT.GENIE) && d < 2 && !e.said) {
     e.said = true;
     say(g, e.type === ENT.MASTER ? LINES.master : LINES.genie);
   }
+  if (e.type === ENT.BOSS) { updateBoss(g, e, dt, d, d < 12 && lineClear(g, e.x, e.y), playing && !isOver(g)); return; }
   if (!playing || isOver(g)) return;
   if (e.type === ENT.MONSTER) updateMonsterState(g, e, d);
-  if ((e.type === ENT.MONSTER && e.state === "chase") || (e.type === ENT.BOSS && e.state !== "dying")) chase(g, e, dx, dy, d, dt);
+  if (e.type === ENT.MONSTER && e.state === "chase") chase(g, e, dx, dy, d, dt);
 }
 
 /** Key and potions are picked up by walking on them. Returns true if picked. */
@@ -68,16 +70,16 @@ function updateMonsterState(g: Game, e: Ent, d: number) {
   if (e.state === "hit" && e.stateT > 0.35) { e.state = "chase"; e.stateT = 0; }
 }
 
+/** Monsters walk straight at the player while they can see them, and hurt on contact. */
 function chase(g: Game, e: Ent, dx: number, dy: number, d: number, dt: number) {
-  if (e.type === ENT.BOSS && d < 9) g.bossNear = true;
   if (d < 12 && d > 0.8 && lineClear(g, e.x, e.y)) {
-    const v = (e.type === ENT.BOSS ? 1.1 : 0.9) * dt;
+    const v = 0.9 * dt;
     const nx = e.x + (dx / d) * v, ny = e.y + (dy / d) * v;
     if (!solid(g, nx, e.y)) e.x = nx;
     if (!solid(g, e.x, ny)) e.y = ny;
   }
   if (d < 1.0) {
-    g.hp -= (e.type === ENT.BOSS ? 20 : 9) * dt;
+    g.hp -= 9 * dt;
     g.sounds.add("hurt"); // ennemies_movement.c
     if (g.hurt <= 0) { g.hurt = 0.25; if (Math.random() < 0.15) say(g, LINES.hurt, 2.5); }
   }

@@ -1,4 +1,5 @@
-import { BOSS_HP, ENT, H, LINES, PLAYER, SPELL, W } from "../config";
+import { ENT, H, LINES, PLAYER, SPELL, W } from "../config";
+import { nearestBoss } from "../boss";
 import { isOver } from "../game";
 import type { Assets, Game } from "../types";
 
@@ -17,14 +18,20 @@ export function renderHud(ctx: Ctx, g: Game, a: Assets, moving: boolean, accent:
   drawTexts(ctx, g);
 }
 
+/** One pixel of the C game's 1920×1080 window, in canvas pixels. */
+const PX = H / 1080;
+/** weapons.c: hands drawn at scale 3, at (screenW / 2 - 40, screenH - 233) (weapons.h). */
+const HAND_SCALE = 3 * PX;
+const HAND_X = 40;
+const HAND_Y = 233;
+
 /** Hands with a small walking bob; spell animation while casting (weapons.c). */
 function drawHands(ctx: Ctx, g: Game, a: Assets, moving: boolean) {
   const bob = Math.sin(g.t * 7) * (moving ? 3 : 1);
   const hand = g.cast > 0
     ? a.img[`spell_1_${Math.min(3, 1 + Math.floor((SPELL.DURATION - g.cast) / 0.15))}`]
     : g.torch ? a.img.torch_player : a.img.free_hands;
-  const hs = 1.25;
-  ctx.drawImage(hand, Math.floor(W / 2 - (hand.width * hs) / 2), Math.floor(H - hand.height * hs + 6 + bob), hand.width * hs, hand.height * hs);
+  ctx.drawImage(hand, Math.floor(W / 2 - HAND_X * PX), Math.floor(H - HAND_Y * PX + bob), hand.width * HAND_SCALE, hand.height * HAND_SCALE);
 }
 
 /** Pink flash when casting, red flash when hurt. */
@@ -52,11 +59,12 @@ function drawPlayerBars(ctx: Ctx, g: Game, a: Assets) {
 }
 
 function drawBossBar(ctx: Ctx, g: Game, a: Assets) {
-  const boss = g.ents.find((e) => e.type === ENT.BOSS);
-  if (!boss || !boss.alive || !g.bossNear) return;
+  const boss = nearestBoss(g);
+  if (!boss || !g.bossNear) return;
   const bx = W / 2 - 96, by = 8, fill = a.img.boss_filler;
   ctx.drawImage(a.img.bossbar, bx, by);
-  ctx.drawImage(fill, 0, 0, fill.width * (boss.hp / BOSS_HP), 9, bx + 2, by + 4, fill.width * Math.max(0, boss.hp / BOSS_HP), 9);
+  const r = Math.max(0, boss.hp / boss.boss!.maxHp);
+  ctx.drawImage(fill, 0, 0, Math.max(1, fill.width * r), 9, bx + 2, by + 4, fill.width * r, 9);
 }
 
 /** Local window around the player (minimap.c, HUD_MAP_X/Y = 10). */

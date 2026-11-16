@@ -1,4 +1,5 @@
 import { ENT, H, MAX_FLOOR, MAX_WALL, SHEETS, TILE_TEX, W } from "../config";
+import { bossFrame } from "../boss";
 import type { Assets, Ent, Game } from "../types";
 import { type Camera, type Frame, camera, fog, shade } from "./frame";
 
@@ -66,7 +67,7 @@ function drawWalls(g: Game, a: Assets, { px, z }: Frame, { dirX, dirY, plX, plY 
 }
 
 /** Animation frame to show for an entity, from its type and state. */
-function spriteFrame(g: Game, e: Ent) {
+function spriteFrame(e: Ent) {
   if (e.type === ENT.MONSTER) {
     if (e.state === "disguised") return Math.floor(e.t * 6) % 6;
     if (e.state === "transform") return 6 + Math.min(4, Math.floor(e.stateT * 6));
@@ -74,15 +75,15 @@ function spriteFrame(g: Game, e: Ent) {
     if (e.state === "dying") return 26 + Math.min(5, Math.floor(e.stateT * 5));
     return 11 + (Math.floor(e.t * 8) % 6);
   }
-  if (e.type === ENT.BOSS) {
-    const d = Math.hypot(e.x - g.px, e.y - g.py);
-    if (e.state === "dying") return 54 + Math.min(31, Math.floor(e.stateT * 12));
-    return d < 1.4 ? 6 + (Math.floor(e.t * 14) % 32) : Math.floor(e.t * 6) % 6;
-  }
+  if (e.type === ENT.BOSS) return bossFrame(e);
   return Math.floor(e.t * 10) % SHEETS[e.type].n;
 }
 
-const spriteScale = (type: number) => (type === ENT.BOSS ? 1.5 : type >= ENT.KEY && type <= ENT.POT_HP ? 0.5 : 1);
+/**
+ * Sprite height relative to a wall. The C game draws every sprite one wall high (cast_ennemies.c);
+ * the boss atlas has empty space around the Shogun, so 1 keeps him human-sized. Pickups lie on the floor.
+ */
+const spriteScale = (type: number) => (type >= ENT.KEY && type <= ENT.POT_HP ? 0.5 : 1);
 
 /** Billboard sprites, sorted far → near and hidden behind walls with the z-buffer. */
 function drawSprites(g: Game, a: Assets, { px, z }: Frame, { dirX, dirY, plX, plY }: Camera) {
@@ -94,7 +95,7 @@ function drawSprites(g: Game, a: Assets, { px, z }: Frame, { dirX, dirY, plX, pl
     .sort((p, q) => q.d - p.d);
   for (const { e } of vis) {
     const sh = SHEETS[e.type], sheet = a.sheets[e.type];
-    const frame = spriteFrame(g, e);
+    const frame = spriteFrame(e);
     const rx = e.x - g.px, ry = e.y - g.py;
     const tX = inv * (dirY * rx - dirX * ry), tY = inv * (-plY * rx + plX * ry);
     if (tY <= 0.15) continue;
