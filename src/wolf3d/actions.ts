@@ -1,4 +1,4 @@
-import { ENT, LINES, PLAYER, SPELL, TILE } from "./config";
+import { ENT, LINES, SPELL, TILE } from "./config";
 import { lineClear, say } from "./game";
 import type { Ent, Game } from "./types";
 
@@ -45,16 +45,8 @@ export function openDoor(g: Game) {
     const t = g.map[ty]?.[tx];
     if (t === TILE.DOOR_1 || t === TILE.DOOR_2) { g.map[ty][tx] = TILE.EMPTY; return; }
     if (t === TILE.BOSS_DOOR) {
-      if (g.inv.key) { g.map[ty][tx] = TILE.EMPTY; say(g, LINES.boss); } else say(g, LINES.sealed, 2.5);
+      if (g.inv.key) { g.map[ty][tx] = TILE.EMPTY; g.inv.key = false; say(g, LINES.boss); } // map.c: consume_key else say(g, LINES.sealed, 2.5);
       return;
     }
   }
-}
-
-export function drinkHealth(g: Game) {
-  if (g.inv.hp > 0 && g.hp < PLAYER.HP) { g.inv.hp--; g.hp = Math.min(PLAYER.HP, g.hp + 40); g.sounds.add("potion"); }
-}
-
-export function drinkMana(g: Game) {
-  if (g.inv.mana > 0) { g.inv.mana--; g.mana = Math.min(PLAYER.MANA, g.mana + 200); g.sounds.add("potion"); }
 }

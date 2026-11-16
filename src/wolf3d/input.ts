@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { cast, drinkHealth, drinkMana, openDoor } from "./actions";
+import { cast, openDoor } from "./actions";
+import { drinkHealth, drinkMana } from "./inventory";
 import { isOver } from "./game";
 import type { Game } from "./types";
 

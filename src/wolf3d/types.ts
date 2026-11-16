@@ -59,7 +59,8 @@ export type Game = {
   mana: number;
   stamina: number;
   torch: boolean;
-  inv: { hp: number; mana: number; key: boolean };
+  /** player.h inventory_t: one of each at most. */
+  inv: { hp: boolean; mana: boolean; key: boolean };
   kills: number;
   /** Time left in the spell animation. */
   cast: number;

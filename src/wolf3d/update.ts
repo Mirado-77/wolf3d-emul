@@ -1,6 +1,7 @@
 import { ENT, LINES, MOVE_SPEED, PLAYER } from "./config";
 import { updateBoss } from "./boss";
 import { isOver, lineClear, say, solid } from "./game";
+import { respawnPickups, tryPickup } from "./inventory";
 import type { Ent, Game, Keys } from "./types";
 
 /** Advance the game by `dt` seconds. `playing` is false in attract mode (canvas not focused). */
@@ -13,6 +14,7 @@ export function update(g: Game, keys: Keys, dt: number, playing: boolean) {
   g.msgT = Math.max(0, g.msgT - dt);
   g.bossNear = false;
   for (const e of g.ents) if (e.alive) updateEntity(g, e, dt, playing);
+  respawnPickups(g, dt);
   if (g.hp <= 0 && g.msg !== LINES.gameOver) { g.hp = 0; say(g, LINES.gameOver, 99); }
 }
 
@@ -42,7 +44,7 @@ function updateEntity(g: Game, e: Ent, dt: number, playing: boolean) {
   e.t += dt; e.stateT += dt;
   const dx = g.px - e.x, dy = g.py - e.y, d = Math.hypot(dx, dy);
   if (e.state === "dying" && e.stateT > 1.2) { e.alive = false; return; }
-  if (tryPickup(g, e, d)) return;
+  if (tryPickup(g, e)) return;
   if ((e.type === ENT.MASTER || e.type === ENT.GENIE) && d < 2 && !e.said) {
     e.said = true;
     say(g, e.type === ENT.MASTER ? LINES.master : LINES.genie);
@@ -51,16 +53,6 @@ function updateEntity(g: Game, e: Ent, dt: number, playing: boolean) {
   if (!playing || isOver(g)) return;
   if (e.type === ENT.MONSTER) updateMonsterState(g, e, d);
   if (e.type === ENT.MONSTER && e.state === "chase") chase(g, e, dx, dy, d, dt);
-}
-
-/** Key and potions are picked up by walking on them. Returns true if picked. */
-function tryPickup(g: Game, e: Ent, d: number) {
-  if (e.type < ENT.KEY || e.type > ENT.POT_HP || d >= 0.6) return false;
-  e.alive = false;
-  if (e.type === ENT.KEY) { g.inv.key = true; say(g, LINES.key); }
-  if (e.type === ENT.POT_MANA) g.inv.mana++;
-  if (e.type === ENT.POT_HP) g.inv.hp++;
-  return true;
 }
 
 /** Monsters hide as statues, transform when the player comes close, then chase. */

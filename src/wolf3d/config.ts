@@ -64,5 +64,8 @@ export const LINES = {
   gameOver: "GAME OVER",
 };
 
-export const HUD_IMAGES = ["player_hud", "blood", "mana", "stamina", "bossbar", "boss_filler", "skeleton_head", "xhair"];
+export const HUD_IMAGES = [
+  "player_hud", "blood", "mana", "stamina", "bossbar", "boss_filler", "skeleton_head", "xhair",
+  "item_frame", "key_hud", "health_pot", "mana_pot", "spell_preview",
+];
 export const HAND_IMAGES = ["free_hands", "spell_1_1", "spell_1_2", "spell_1_3", "torch_player"];

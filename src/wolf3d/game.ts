@@ -13,7 +13,7 @@ export function newGame(a: Assets): Game {
     // init_game.c: x = 3, y = 3, dir = (-1, 0) — we face down the first corridor instead
     px: 3.5, py: 3.5, dir: Math.PI / 2,
     hp: PLAYER.HP, mana: PLAYER.MANA, stamina: PLAYER.STAMINA, torch: true,
-    inv: { hp: 0, mana: 0, key: false },
+    inv: { hp: false, mana: false, key: false },
     kills: 0, cast: 0, hurt: 0, msg: LINES.discover, msgT: 5, bossNear: false, won: false, t: 0,
     sounds: new Set(),
   };

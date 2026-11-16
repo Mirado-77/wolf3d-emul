@@ -1,6 +1,7 @@
 import { ENT, H, LINES, PLAYER, SPELL, W } from "../config";
 import { nearestBoss } from "../boss";
 import { isOver } from "../game";
+import { drawInventory } from "./inventory";
 import type { Assets, Game } from "../types";
 
 const HALF = H / 2;
@@ -13,6 +14,7 @@ export function renderHud(ctx: Ctx, g: Game, a: Assets, moving: boolean, accent:
   drawEffects(ctx, g);
   ctx.drawImage(a.img.xhair, W / 2 - 8, HALF - 8, 16, 16);
   drawPlayerBars(ctx, g, a);
+  drawInventory(ctx, g, a);
   drawBossBar(ctx, g, a);
   drawMinimap(ctx, g, accent);
   drawTexts(ctx, g);
@@ -45,13 +47,18 @@ function drawEffects(ctx: Ctx, g: Game) {
   if (g.hurt > 0) { ctx.fillStyle = `rgba(160,0,0,${g.hurt * 1.6})`; ctx.fillRect(0, 0, W, H); }
 }
 
-/** HUD kit: player_hud.png 133×36 with three filler lines (positions.h). */
+/**
+ * HUD kit: player_hud.png 133×36 with three filler lines, bottom-left like the C game
+ * (positions.h: PLAYER_HUD at (20, WIN_HEIGHT - 350), HUD_SCALEX = 6). Offsets below are in player_hud.png pixels.
+ */
 function drawPlayerBars(ctx: Ctx, g: Game, a: Assets) {
-  const hx = W - 133 - 6, hy = H - 36 - 6;
-  ctx.drawImage(a.img.player_hud, hx, hy);
-  ctx.drawImage(a.img.skeleton_head, hx + 4, hy + 3, 26, 26);
-  const bar = (im: HTMLImageElement, v: number, y: number) =>
-    ctx.drawImage(im, 0, 0, Math.max(1, im.width * v), im.height, hx + 41, hy + y, Math.max(1, im.width * v), im.height);
+  const s = 6 * PX, hx = 20 * PX, hy = H - 350 * PX;
+  ctx.drawImage(a.img.player_hud, hx, hy, a.img.player_hud.width * s, a.img.player_hud.height * s);
+  ctx.drawImage(a.img.skeleton_head, hx + 4 * s, hy + 3 * s, 26 * s, 26 * s);
+  const bar = (im: HTMLImageElement, v: number, y: number) => {
+    const w = Math.max(1, im.width * Math.max(0, v));
+    ctx.drawImage(im, 0, 0, w, im.height, hx + 41 * s, hy + y * s, w * s, im.height * s);
+  };
   // blood line on top, then mana, then stamina
   bar(a.img.blood, g.hp / PLAYER.HP, 17);
   bar(a.img.mana, g.mana / PLAYER.MANA, 23);
@@ -88,11 +95,10 @@ function drawMinimap(ctx: Ctx, g: Game, accent: string) {
   ctx.fillRect(mmx + (g.px - cx + R) * ms - 1, mmy + (g.py - cy + R) * ms - 1, 3, 3);
 }
 
-/** Inventory, kill counter and dialogue / game-over text (alagard font). */
+/** Kill counter and dialogue / game-over text (alagard font). */
 function drawTexts(ctx: Ctx, g: Game) {
   ctx.font = "10px alagard, monospace";
-  ctx.textAlign = "left"; ctx.fillStyle = "#e7d8b8";
-  ctx.fillText(`PV ${g.inv.hp} [L]   MANA ${g.inv.mana} [M]   ${g.inv.key ? "CLE ✓" : ""}`, 8, H - 8);
+  ctx.fillStyle = "#e7d8b8";
   ctx.textAlign = "right";
   ctx.fillText(`yokai ${g.kills}`, W - 8, 74);
   if (g.msgT > 0) drawMessage(ctx, g);
@@ -103,7 +109,7 @@ function drawMessage(ctx: Ctx, g: Game) {
   const over = g.msg === LINES.gameOver;
   ctx.textAlign = "center";
   ctx.font = over ? "28px alagard, monospace" : "11px alagard, monospace";
-  const y = over || g.won ? HALF : H - 62;
+  const y = over || g.won ? HALF : H - 92; // above the player HUD and the inventory
   const tw = ctx.measureText(g.msg).width;
   ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(W / 2 - tw / 2 - 6, y - 12, tw + 12, over ? 34 : 17);
   ctx.fillStyle = over ? "#dc2626" : "#f5ecd7"; ctx.fillText(g.msg, W / 2, y + (over ? 12 : 0));
