@@ -48,9 +48,9 @@ export function openDoor(g: Game) {
 }
 
 export function drinkHealth(g: Game) {
-  if (g.inv.hp > 0 && g.hp < PLAYER.HP) { g.inv.hp--; g.hp = Math.min(PLAYER.HP, g.hp + 40); }
+  if (g.inv.hp > 0 && g.hp < PLAYER.HP) { g.inv.hp--; g.hp = Math.min(PLAYER.HP, g.hp + 40); g.sounds.add("potion"); }
 }
 
 export function drinkMana(g: Game) {
-  if (g.inv.mana > 0) { g.inv.mana--; g.mana = Math.min(PLAYER.MANA, g.mana + 200); }
+  if (g.inv.mana > 0) { g.inv.mana--; g.mana = Math.min(PLAYER.MANA, g.mana + 200); g.sounds.add("potion"); }
 }

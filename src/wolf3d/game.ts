@@ -13,6 +13,7 @@ export function newGame(a: Assets): Game {
     hp: PLAYER.HP, mana: PLAYER.MANA, stamina: PLAYER.STAMINA, torch: true,
     inv: { hp: 0, mana: 0, key: false },
     kills: 0, cast: 0, hurt: 0, msg: LINES.discover, msgT: 5, bossNear: false, won: false, t: 0,
+    sounds: new Set(),
   };
 }
 

@@ -31,6 +31,7 @@ function updatePlayer(g: Game, k: Keys, dt: number) {
     if (!solid(g, g.px + mx + Math.sign(mx) * 0.2, g.py)) g.px += mx;
     if (!solid(g, g.px, g.py + my + Math.sign(my) * 0.2)) g.py += my;
     if (sprint) g.stamina = Math.max(0, g.stamina - 60 * dt);
+    g.sounds.add("footstep"); // movements.c
   }
   if (!sprint || len === 0) g.stamina = Math.min(PLAYER.STAMINA, g.stamina + 30 * dt);
   g.mana = Math.min(PLAYER.MANA, g.mana + 12 * dt);
@@ -77,6 +78,7 @@ function chase(g: Game, e: Ent, dx: number, dy: number, d: number, dt: number) {
   }
   if (d < 1.0) {
     g.hp -= (e.type === ENT.BOSS ? 20 : 9) * dt;
+    g.sounds.add("hurt"); // ennemies_movement.c
     if (g.hurt <= 0) { g.hurt = 0.25; if (Math.random() < 0.15) say(g, LINES.hurt, 2.5); }
   }
 }

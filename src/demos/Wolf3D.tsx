@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { DemoProps } from "../components/DemoFrame";
 import { useAnimationFrame, useKeys } from "../hooks";
 import { loadAssets } from "../wolf3d/assets";
+import { type GameAudio, createAudio, playQueued, setMusicPlaying, stopAll } from "../wolf3d/audio";
 import { H, W } from "../wolf3d/config";
 import { newGame } from "../wolf3d/game";
 import { handleKeyPress, useMouseLook } from "../wolf3d/input";
@@ -29,10 +30,19 @@ export default function Wolf3D({ running, accent }: DemoProps) {
   const [title, setTitle] = useState(false);
   const game = useRef<Game | null>(null);
   const frame = useRef<Frame | null>(null);
+  const audio = useRef<GameAudio | null>(null);
 
   useEffect(() => {
     loadAssets().then((a) => { game.current = newGame(a); setAssets(a); }).catch(() => setError(true));
   }, []);
+
+  // sounds and music: created once, silenced when the demo stops or unmounts
+  useEffect(() => {
+    audio.current ??= createAudio();
+    const a = audio.current;
+    if (!running) stopAll(a);
+    return () => stopAll(a);
+  }, [running]);
 
   const keys = useKeys(wrapRef, (k) => {
     const g = game.current;
@@ -46,7 +56,12 @@ export default function Wolf3D({ running, accent }: DemoProps) {
     if (!g || !a || !c) return;
     const ctx = c.getContext("2d")!;
     frame.current ??= createFrame(ctx);
-    update(g, keys.current, dt, focused && !title);
+    const playing = focused && !title;
+    update(g, keys.current, dt, playing);
+    if (audio.current) {
+      playQueued(audio.current, g);
+      setMusicPlaying(audio.current, playing);
+    }
     renderWorld(g, a, frame.current);
     ctx.putImageData(frame.current.img, 0, 0);
     renderHud(ctx, g, a, keys.current.size > 0, accent);

@@ -53,7 +53,12 @@ export type Game = {
   bossNear: boolean;
   won: boolean;
   t: number;
+  /** Sounds to play this frame (see audio.ts). */
+  sounds: Set<Sound>;
 };
+
+/** Sound effects of sound_system.c. */
+export type Sound = "hurt" | "potion" | "footstep";
 
 /** Keys currently held down (lower-case letters, or KeyboardEvent.key names). */
 export type Keys = Set<string>;
